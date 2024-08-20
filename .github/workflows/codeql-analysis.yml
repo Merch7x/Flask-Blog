@@ -1,0 +1,42 @@
+# codeql is a utility from github that scans code for vulnerabilities
+
+name: "Code scanning"
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "Blog/**"
+  pull_request:
+    branches: [main]
+    paths:
+      - "Blog/**"
+
+jobs:
+  analyze:
+    name: Analyze code
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: ["python"]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v2
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
