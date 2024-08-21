@@ -1,7 +1,11 @@
 <html>
 
 <head>
+  {% if title %}
   <title> {{ title }} - Blog</title>
+  {% else %}
+  <title>Welcome to the Blog</title>
+  {% endif %}
 </head>
 
 <body>
