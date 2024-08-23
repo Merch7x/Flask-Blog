@@ -1,4 +1,5 @@
 from datetime import datetime
+from werkzeug.security import generate_password_hash, check_password_hash
 from App import db
 
 
@@ -8,10 +9,18 @@ class User(db.Model):
     username = db.Column(db.String(64), index=True, unique=True)
     email = db.Column(db.String(120), index=True, unique=True)
     password_hash = db.Column(db.String(128))
-    posts = db.relationship('Posts', backref='author', lazy='dynamic')
+    posts = db.relationship('Post', backref='author', lazy='dynamic')
 
     def __repr__(self):
         return f'<user> {self.username}'
+
+    def set_password(self, password):
+        """transforms a users password into a hash"""
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        """Checks password hash against user password"""
+        self.password_hash = check_password_hash(password)
 
 
 class Post(db.Model):
