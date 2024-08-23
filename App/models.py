@@ -16,7 +16,7 @@ class User(UserMixin, db.Model):
         return f'<user> {self.username}'
 
     def set_password(self, password):
-        """transforms a users password into a hash"""
+        """Transforms a users password into a hash"""
         self.password_hash = generate_password_hash(password)
 
     def check_password(self, password):
@@ -27,7 +27,8 @@ class User(UserMixin, db.Model):
 @login.user_loader
 def load_user(id):
     """Creates a user loader function that 
-        writess the login state to the user 
+        writess the login state to the user
+        session
     """
     return User.query.get(int(id))
 

@@ -1,12 +1,17 @@
-from flask import render_template, flash, redirect, url_for
+from flask import render_template, flash, redirect, url_for, request
+from werkzeug.urls import url_parse
+from flask_login import login_user, current_user, logout_user, login_required
 from App import app
 from App.forms import LoginForm
+from App.models import User
 
 
+# note: order of decorators is important- routes first
 @app.route("/")
 @app.route("/index")
+# protects routes from anonymous users
+@login_required
 def index():
-    user = {'username': 'Timbo'}
     posts = [
         {
             'author': {'username': 'john'},
@@ -17,15 +22,38 @@ def index():
             'body': 'The Movie was really good'
         }
     ]
-    return render_template('index.html', user=user, title='Home', posts=posts)
+    return render_template('index.html', title='Home', posts=posts)
 
 
 @app.route("/login", methods=['GET', 'POST'])
 def login():
-    """Defines a login routes"""
+    """Defines a login route"""
+    # prevents logged in users from coming to login again
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+
     form = LoginForm()
     if form.validate_on_submit():
-        flash(
-            f'Login requested for user {form.username.data}, remember_me={form.remember_me.data}')
-        return redirect(url_for('index'))
+        # first used instead of all since atleast one result is expected
+        user = User.query.filter_by(username=form.username.data).first()
+        if user is None or not user.check_password(form.password.data):
+            flash('Invalid username or password')
+            return redirect(url_for('login'))
+
+        login_user(user, remember=form.remember_me.data)
+        # enhance user experience by redirecting users back
+        # to the login required pages once authenticated
+        next_page = request.args.get('next')  # parse the query string
+        # check query string is a relative url...just a path
+        if not next_page or url_parse(next_page).netloc != '':
+            next_page = url_for('index')
+            return redirect(next_page)
     return render_template('login.html', title='Sign In', form=form)
+
+
+@app.route("/logout")
+def logout():
+    """Defines a logout route"""
+    # clears the user session
+    logout_user()
+    return redirect(url_for('index'))
