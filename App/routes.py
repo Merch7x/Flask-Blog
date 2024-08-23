@@ -1,5 +1,6 @@
 from flask import render_template, flash, redirect, url_for, request
-from werkzeug.urls import url_parse
+# from werkzeug.urls import url_parse
+from urllib.parse import urlparse
 from flask_login import login_user, current_user, logout_user, login_required
 from App import app, db
 from App.forms import LoginForm, SignUpForm
@@ -45,7 +46,7 @@ def login():
         # to the login required pages once authenticated
         next_page = request.args.get('next')  # parse the query string
         # check query string is a relative url...just a path
-        if not next_page or url_parse(next_page).netloc != '':
+        if not next_page or urlparse(next_page).netloc != '':
             next_page = url_for('index')
             return redirect(next_page)
     return render_template('login.html', title='Sign In', form=form)
@@ -73,4 +74,4 @@ def SignUp():
         db.session.commit()
         flash('Congrats you are now registered!')
         return redirect(url_for('login'))
-    return render_template('SignUp.html', title=SignUp, form=form)
+    return render_template('sign_up.html', title=SignUp, form=form)

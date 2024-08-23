@@ -21,7 +21,7 @@ class User(UserMixin, db.Model):
 
     def check_password(self, password):
         """Checks password hash against user password"""
-        self.password_hash = check_password_hash(password)
+        return check_password_hash(self.password_hash, password)
 
 
 @login.user_loader

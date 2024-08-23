@@ -15,7 +15,8 @@ class LoginForm(FlaskForm):
 class SignUpForm(FlaskForm):
     """User Registration Form"""
     username = StringField('Username', validators=[DataRequired()])
-    email = StringField('Email', validators=[DataRequired(), Email()])
+    email = StringField('Email', validators=[
+                        DataRequired(), Email()])
     password = PasswordField('Password', validators=[DataRequired()])
     password2 = PasswordField('Repeat Password', validators=[
         DataRequired(), EqualTo('password')])
@@ -28,7 +29,7 @@ class SignUpForm(FlaskForm):
         if user is not None:
             raise ValidationError('Username is taken!')
 
-    def validate_username(self, email):
+    def validate_email(self, email):
         """Validate email is unique"""
         user = User.query.filter_by(email=email.data).first()
         if user is not None:
