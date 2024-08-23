@@ -12,7 +12,11 @@
     {{ form.password.label }}<br>
     {{ form.password(size=32) }}
   </p>
-  <p>{{ form.remember_me() }}</p>
+  <p>
+    {{ form.remember_me() }}
+    {{ form.remember_me.label }}
+  </p>
   <p>{{ form.submit() }}</p>
 </form>
+<p>New User? <a href="{{ url_for('SignUp')}}">Click to SignUp</a></p>
 {% endblock %}
