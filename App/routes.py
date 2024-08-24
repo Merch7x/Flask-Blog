@@ -75,3 +75,15 @@ def SignUp():
         flash('Congrats you are now registered!')
         return redirect(url_for('login'))
     return render_template('sign_up.html', title=SignUp, form=form)
+
+
+@app.route('/user/<username>')
+@login_required
+def user(username):
+    """Profile page route"""
+    user = User.query.filter_by(username=username).first_or_404()
+    posts = [
+        {'author': user, 'body': 'test post #1'},
+        {'author': user, 'body': 'test post #2'}
+    ]
+    return render_template('user.html', user=user, posts=posts)
