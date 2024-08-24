@@ -1,13 +1,24 @@
 from flask import render_template, flash, redirect, url_for, request
 # from werkzeug.urls import url_parse
+from datetime import datetime
 from urllib.parse import urlparse
 from flask_login import login_user, current_user, logout_user, login_required
 from App import app, db
-from App.forms import LoginForm, SignUpForm
+from App.forms import LoginForm, SignUpForm, EditProfileForm
 from App.models import User
 
 
+# the app.before_request is ran before any request
+# against any route is ran. it allows us to not convolute
+# the codebase by adding the same lines of code to all the routes
+@app.before_request
+def before_request():
+    if current_user.is_authenticated:
+        current_user.last_seen = datetime.utcnow()
+
+
 # note: order of decorators is important- routes first
+
 @app.route("/")
 @app.route("/index")
 # protects routes from anonymous users
@@ -57,7 +68,7 @@ def logout():
     """Defines a logout route"""
     # clears the user session
     logout_user()
-    return redirect(url_for('index'))
+    return redirect(url_for('login'))
 
 
 @app.route('/SignUp', methods=['GET', 'POST'])
@@ -87,3 +98,19 @@ def user(username):
         {'author': user, 'body': 'test post #2'}
     ]
     return render_template('user.html', user=user, posts=posts)
+
+
+@app.route('/edit_profile', methods=["GET", "POST"])
+@login_required
+def edit_profile():
+    form = EditProfileForm()
+    if form.validate_on_submit():
+        current_user.username = form.username.data
+        current_user.about_me = form.about_me.data
+        db.session.commit()
+        flash('Profile Updated Successfully!')
+        return redirect(url_for('index'))
+    elif request.method == 'GET':
+        form.username.data = current_user.username
+        form.about_me.data = current_user.about_me
+    return render_template('edit_profile.html', title='Edit Profile', form=form)
