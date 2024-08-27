@@ -5,16 +5,32 @@ from flask_login import UserMixin
 from App import db, login
 
 
+# Auxilliry table used to instrument the many to many relationship
+# between users. it doesn't represent any object.it is managed by sqlalchemy
+followers = db.Table(
+    'followers',
+    db.Column('follower_id', db.Integer, db.ForeignKey('user.id')),
+    db.Column('followed_id', db.Integer, db.ForeignKey('user.id'))
+)
+
+
 class User(UserMixin, db.Model):
     """A database model for users"""
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), index=True, unique=True)
     email = db.Column(db.String(120), index=True, unique=True)
     password_hash = db.Column(db.String(128))
+    # sql-alchemy construct 'posts' only exists in the model not db
     posts = db.relationship('Post', backref='author', lazy='dynamic')
     about_me = db.Column(db.String(140))
     last_seen = db.Column(
         db.DateTime, default=datetime.utcnow)  # revisit
+    followed = db.relationship(
+        'User', secondary=followers,
+        primaryjoin=(followers.c.follower_id == id),
+        secondaryjoin=(followers.c.followed_id == id),
+        backref=db.backref('followers', lazy='dynamic'), lazy='dynamic'
+    )
 
     def __repr__(self):
         return f'<user> {self.username}'
@@ -35,9 +51,9 @@ class User(UserMixin, db.Model):
         return f'https://www.gravatar.com/avatar/{digest}?d=identicon&s={size}'
 
 
-@login.user_loader
+@ login.user_loader
 def load_user(id):
-    """Creates a user loader function that 
+    """Creates a user loader function that
         writess the login state to the user
         session
     """
