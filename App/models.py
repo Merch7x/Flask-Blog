@@ -5,9 +5,9 @@ from flask_login import UserMixin
 from App import db, login
 
 
-# Auxilliry table used to instrument the many to many relationship
+# Auxiliary table used to instrument the many to many relationship
 # between users. it doesn't represent any object.it is managed by sqlalchemy
-following = db.Table(
+followers = db.Table(
     'followers',
     db.Column('follower_id', db.Integer, db.ForeignKey('user.id')),
     db.Column('followed_id', db.Integer, db.ForeignKey('user.id'))
@@ -25,11 +25,11 @@ class User(UserMixin, db.Model):
     about_me = db.Column(db.String(140))
     last_seen = db.Column(
         db.DateTime, default=datetime.utcnow)  # revisit
-    followers = db.relationship(
-        'User', secondary=following,
-        primaryjoin=(following.c.follower_id == id),
-        secondaryjoin=(following.c.followed_id == id),
-        backref=db.backref('following', lazy='dynamic'), lazy='dynamic'
+    followed = db.relationship(
+        'User', secondary=followers,
+        primaryjoin=(followers.c.follower_id == id),
+        secondaryjoin=(followers.c.followed_id == id),
+        backref=db.backref('followers', lazy='dynamic'), lazy='dynamic'
     )
 
     def __repr__(self):
@@ -49,6 +49,21 @@ class User(UserMixin, db.Model):
         """create a user's avatar"""
         digest = md5(self.email.lower().encode('utf-8 ')).hexdigest()
         return f'https://www.gravatar.com/avatar/{digest}?d=identicon&s={size}'
+
+    def is_following(self, user):
+        """Establish whether a user is following another user"""
+        return self.followed.filter(
+            followers.c.followed_id == user.id).count() > 0
+
+    def follow(self, user):
+        """Follow a user"""
+        if not self.is_following(user):
+            self.followed.append(user)
+
+    def unfollow(self, user):
+        """Unfollow a user"""
+        if self.is_following(user):
+            self.followed.remove(user)
 
 
 @ login.user_loader
