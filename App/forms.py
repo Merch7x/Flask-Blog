@@ -1,6 +1,8 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, TextAreaField
-from wtforms.validators import ValidationError, DataRequired, Email, EqualTo, Length
+from wtforms import StringField, PasswordField, \
+    BooleanField, SubmitField, TextAreaField
+from wtforms.validators import ValidationError, \
+    DataRequired, Email, EqualTo, Length
 from App.models import User
 
 
@@ -40,4 +42,10 @@ class EditProfileForm(FlaskForm):
     """Enables a users profile to be set ad edited"""
     username = StringField('Username', validators=[DataRequired()])
     about_me = TextAreaField('About me', validators=[Length(min=0, max=140)])
+    submit = SubmitField('Submit')
+
+
+class PostForm(FlaskForm):
+    post = TextAreaField("What's on your mind?", validators=[
+        DataRequired(), Length(min=1, max=140)])
     submit = SubmitField('Submit')
