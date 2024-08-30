@@ -1,91 +1,67 @@
-# name: Continuous Integration
+name: Continuous Integration
 
-# on:
-#   workflow_dispatch:
-#   push:
-#     branches: [main]
-#   pull_request:
-#     branches: [main]
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths-ignore:
+      - "migrations/"
+      - "*.txt"
+      - "*.md"
 
-# jobs:
-#   lint:
-#     name: "Lint the code"
-#     runs-on: ubuntu-latest
+  pull_request:
+    branches: [main]
+    paths-ignore:
+      - "migrations/"
+      - "*.txt"
+      - "*.md"
 
-#     steps:
-#       - name: Checkout code
-#         uses: actions/checkout@v3
+jobs:
+  # lint:
+  #   name: "Lint the code"
+  #   runs-on: ubuntu-latest
 
-#       - name: Set up Python
-#         uses: actions/setup-python@v4
-#         with:
-#           python-version: "3.10"
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v3
 
-#       - name: Install dependencies
-#         run: |
-#           python -m venv venv
-#           . venv/bin/activate
-#           pip install --upgrade pip
-#           pip install flake8 black
+  #     - name: Set up Python
+  #       uses: actions/setup-python@v4
+  #       with:
+  #         python-version: "3.10"
 
-#       - name: Run flake8
-#         run: |
-#           . venv/bin/activate
-#           flake8 .  # Lint the code
-#   test:
-#     name: Run unittests
-#     runs-on: ubuntu-latest
+  #     - name: Install dependencies
+  #       run: |
+  #         python -m venv venv
+  #         . venv/bin/activate
+  #         pip install --upgrade pip
+  #         pip install flake8 black
 
-#     steps:
-#       - name: Checkout code
-#         uses: actions/checkout@v3
+  #     - name: Run flake8
+  #       run: |
+  #         . venv/bin/activate
+  #         flake8 .  # Lint the code
+  test:
+    name: Run unittests
+    runs-on: ubuntu-latest
 
-#       - name: Set up Python
-#         uses: actions/setup-python@v4
-#         with:
-#           python-version: "3.10" # Use the desired Python version
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-#       - name: Install dependencies
-#         run: |
-#           python -m venv venv
-#           . venv/bin/activate
-#           pip install --upgrade pip
-#           pip install -r requirements.txt
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
 
-#       - name: Run unittests
-#         run: |
-#           . venv/bin/activate
-#           pytest
+      - name: Install dependencies
+        run: |
+          python -m venv venv
+          . venv/bin/activate
+          pip install --upgrade pip
+          pip install -r requirements.txt
 
-# name: Run Pytest
-
-# on:
-#   push:
-#     branches: [main]
-#   pull_request:
-#     branches: [main]
-
-# jobs:
-#   test:
-#     runs-on: ubuntu-latest
-
-#     steps:
-#       - name: Checkout code
-#         uses: actions/checkout@v2
-
-#       - name: Set up Python
-#         uses: actions/setup-python@v4
-#         with:
-#           python-version: '3.11'
-
-#       - name: Install dependencies
-#         run: |
-#           python -m venv venv
-#           . venv/bin/activate
-#           pip install --upgrade pip
-#           pip install -r requirements.txt
-
-#       - name: Run pytest
-#         run: |
-#           . venv/bin/activate
-#           pytest  # Runs all tests discovered by pytest
+      - name: Run unittests
+        run: |
+          . venv/bin/activate
+          pytest

@@ -6,12 +6,16 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths:
-      - "App/**"
+    paths-ignore:
+      - "migrations/"
+      - "*.txt"
+      - "*.md"
   pull_request:
     branches: [main]
-    paths:
-      - "App/**"
+    paths-ignore:
+      - "migrations/"
+      - "*.txt"
+      - "*.md"
 
 jobs:
   analyze:
