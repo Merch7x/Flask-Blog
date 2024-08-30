@@ -57,6 +57,8 @@ class User(UserMixin, db.Model):
 
     def follow(self, user):
         """Follow a user"""
+        if self == user:
+            raise ValueError("Users cannot follow themselves.")
         if not self.is_following(user):
             self.followed.append(user)
 
