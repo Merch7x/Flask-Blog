@@ -38,6 +38,12 @@ def index():
     return render_template('index.html', form=form, title='Home', posts=posts)
 
 
+@app.route("/explore", methods=['GET', 'POST'])
+def Explore():
+    posts = Post.query.order_by(Post.timestamp.desc()).all()
+    return render_template('index.html', title='Explore', posts=posts)
+
+
 @app.route("/login", methods=['GET', 'POST'])
 def login():
     """Defines a login route"""
@@ -94,10 +100,7 @@ def SignUp():
 def user(username):
     """Profile page route"""
     user = User.query.filter_by(username=username).first_or_404()
-    posts = [
-        {'author': user, 'body': 'test post #1'},
-        {'author': user, 'body': 'test post #2'}
-    ]
+    posts = Post.query.filter_by(author=user).order_by(Post.timestamp.desc())
     return render_template('user.html', user=user, posts=posts)
 
 
