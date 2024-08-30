@@ -4,8 +4,8 @@ from datetime import datetime
 from urllib.parse import urlparse
 from flask_login import login_user, current_user, logout_user, login_required
 from App import app, db
-from App.forms import LoginForm, SignUpForm, EditProfileForm
-from App.models import User
+from App.forms import LoginForm, SignUpForm, EditProfileForm, PostForm
+from App.models import User, Post
 
 
 # the app.before_request is ran before any request
@@ -19,22 +19,23 @@ def before_request():
 
 # note: order of decorators is important- routes first
 
-@app.route("/")
-@app.route("/index")
+@app.route("/", methods=['GET', 'POST'])
+@app.route("/index", methods=['GET', 'POST'])
 # protects routes from anonymous users
 @login_required
 def index():
-    posts = [
-        {
-            'author': {'username': 'john'},
-            'body': 'Beautiful day in Portland!'
-        },
-        {
-            'author': {'username': 'Susan'},
-            'body': 'The Movie was really good'
-        }
-    ]
-    return render_template('index.html', title='Home', posts=posts)
+    form = PostForm()
+    if form.validate_on_submit():
+        post = Post(body=form.post.data, author=current_user)
+        db.session.add(post)
+        db.session.commit()
+        flash('Done!')
+        # redirect because if template is rendered on post request
+        # were a refresh to happen the form would be resubmitted
+        # standard response for a post is a redirect
+        return redirect(url_for('index'))
+    posts = current_user.followed_posts().all()
+    return render_template('index.html', form=form, title='Home', posts=posts)
 
 
 @app.route("/login", methods=['GET', 'POST'])
