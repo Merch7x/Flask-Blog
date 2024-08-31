@@ -4,8 +4,10 @@ from datetime import datetime
 from urllib.parse import urlparse
 from flask_login import login_user, current_user, logout_user, login_required
 from App import app, db
-from App.forms import LoginForm, SignUpForm, EditProfileForm, PostForm
+from App.forms import LoginForm, SignUpForm, EditProfileForm, PostForm, \
+    ResetPasswordRequestForm, ResetPasswordForm
 from App.models import User, Post
+from App.email import send_password_reset_email
 
 
 # the app.before_request is ran before any request
@@ -113,6 +115,38 @@ def SignUp():
     return render_template('sign_up.html', title=SignUp, form=form)
 
 
+@app.route('/reset_password_request', methods=['GET', 'POST'])
+def reset_password_request():
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+    form = ResetPasswordRequestForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(email=form.email.data).first()
+        if user:
+            send_password_reset_email(user)
+        flash('check your email for the instructions to reset your password')
+        return redirect(url_for('login'))
+    return render_template('reset_password_request.html',
+                           title='Reset Password', form=form)
+
+
+@app.route('/reset_password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+    user = User.verify_reset_password_token(token)
+
+    if not user:
+        return redirect(url_for('index'))
+    form = ResetPasswordForm()
+    if form.validate_on_submit():
+        user.set_password(form.password.data)
+        db.session.commit()
+        flash('Your passsword has been reset.')
+        return redirect(url_for('login'))
+    return render_template('reset_password.html', form=form)
+
+
 @app.route('/user/<username>')
 @login_required
 def user(username):
@@ -136,7 +170,7 @@ def user(username):
 @app.route('/edit_profile', methods=["GET", "POST"])
 @login_required
 def edit_profile():
-    form = EditProfileForm()
+    form = EditProfileForm(current_user.username)
     if form.validate_on_submit():
         current_user.username = form.username.data
         current_user.about_me = form.about_me.data
