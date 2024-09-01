@@ -50,7 +50,7 @@ def index():
 
 
 @app.route("/explore", methods=['GET', 'POST'])
-def Explore():
+def explore():
     page = request.args.get('page', 1, type=int)
     posts = Post.query.order_by(Post.timestamp.desc()). \
         paginate(
