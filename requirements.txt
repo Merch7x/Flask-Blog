@@ -4,9 +4,10 @@ Flask_Bootstrap==3.3.7.1
 Flask_Login==0.6.3
 flask_mail==0.10.0
 Flask_Migrate==4.0.5
+Flask_Moment==1.0.6
 flask_sqlalchemy==3.1.1
 flask_wtf==1.2.1
-PyJWT==2.3.0
+PyJWT==2.9.0
 pytest==8.3.2
 pytest-cov==5.0.0
 pytest-mock==3.14.0
