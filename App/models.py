@@ -108,6 +108,7 @@ class Post(db.Model):
     timestamp = db.Column(db.DateTime, index=True,
                           default=datetime.now)  # refer back utcnow deprecated
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    language = db.Column(db.String(5))
 
     def __repr__(self):
         return f'<post {self.body}'
