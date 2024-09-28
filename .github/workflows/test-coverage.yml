@@ -1,37 +1,37 @@
-name: Test Coverage
+# name: Test Coverage
 
-on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+# on:
+#   push:
+#     branches: [main]
+#   pull_request:
+#     branches: [main]
 
-jobs:
-  test:
-    runs-on: ubuntu-latest
+# jobs:
+#   test-coverage:
+#     runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v2
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.11"
+#       - name: Set up Python
+#         uses: actions/setup-python@v4
+#         with:
+#           python-version: "3.11"
 
-      - name: Install dependencies
-        run: |
-          python -m venv venv
-          . venv/bin/activate
-          pip install --upgrade pip
-          pip install pytest pytest-cov codecov
+#       - name: Install dependencies
+#         run: |
+#           python -m venv venv
+#           . venv/bin/activate
+#           pip install --upgrade pip
+#           pip install pytest pytest-cov codecov
 
-      - name: Run tests with coverage
-        run: |
-          . venv/bin/activate
-          pytest --cov=your_package_name  # Replace with your package name
+#       - name: Run tests with coverage
+#         run: |
+#           . venv/bin/activate
+#           pytest --cov=your_package_name  # Replace with your package name
 
-      - name: Upload coverage to Codecov
-        run: |
-          . venv/bin/activate
-          codecov  # Uploads the coverage report to Codecov
+#       - name: Upload coverage to Codecov
+#         run: |
+#           . venv/bin/activate
+#           codecov  # Uploads the coverage report to Codecov
