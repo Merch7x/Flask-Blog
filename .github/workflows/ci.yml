@@ -109,7 +109,7 @@ jobs:
           images: |
             my-docker-hub-namespace/my-docker-hub-repository
             ghcr.io/${{ github.repository_owner }}/my-ghcr-repository
-            ${AWS_ACCOUNT_ID}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/my-ecr-repository
+            ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/my-ecr-repository
 
       - name: Build and push Docker image
         id: push
