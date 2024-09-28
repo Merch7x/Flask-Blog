@@ -99,10 +99,8 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Log in to Amazon ECR
-        id: login-ecr-public
+        id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
-        with:
-          registry-type: public
 
       - name: Extract metadata (tags, labels) for Docker (Docker Hub, GHCR, and ECR)
         id: meta
