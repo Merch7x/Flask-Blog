@@ -118,4 +118,7 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: v1.0.0
+          tags: |
+            merch7x/dev-repo:flask-blog:latest
+            ghcr.io/${{ github.repository_owner }}/my-ghcr-repository:flask-blog:latest
+            ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/merch7x/dev:flask-blog:latest
