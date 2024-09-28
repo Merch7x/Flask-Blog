@@ -107,7 +107,7 @@ jobs:
         uses: docker/metadata-action@v4
         with:
           images: |
-            my-docker-hub-namespace/my-docker-hub-repository
+            merch7x/dev-repo
             ghcr.io/${{ github.repository_owner }}/my-ghcr-repository
             ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/my-ecr-repository
 
