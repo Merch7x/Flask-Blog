@@ -102,14 +102,14 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Extract metadata (tags, labels) for Docker (Docker Hub, GHCR, and ECR)
-        id: meta
-        uses: docker/metadata-action@v4
-        with:
-          images: |
-            merch7x/flask-blog
-            ghcr.io/${{ github.repository_owner }}/dev
-            ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/merch7x/flask-blog
+      # - name: Extract metadata (tags, labels) for Docker (Docker Hub, GHCR, and ECR)
+      #   id: meta
+      #   uses: docker/metadata-action@v4
+      #   with:
+      #     images: |
+      #       merch7x/flask-blog
+      #       ghcr.io/${{ github.repository_owner }}/dev
+      #       ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/merch7x/flask-blog
 
       - name: Build and push Docker image
         id: push
@@ -119,6 +119,6 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: |
-            ${{ steps.meta.outputs.tags }}
-          labels: |
-            ${{ steps.meta.outputs.labels }}
+            merch7x/flask-blog:v1.0.0
+            ghcr.io/${{ github.repository_owner }}/dev:v1.0.0
+            ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/merch7x/flask-blog:v1.0.0
