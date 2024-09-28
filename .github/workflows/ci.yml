@@ -106,7 +106,7 @@ jobs:
 
       - name: Extract metadata (tags, labels) for Docker (Docker Hub, GHCR, and ECR)
         id: meta
-        uses: docker/metadata-action@v4
+        uses: docker/metadata-action@v5
         with:
           images: |
             merch7x/flask-blog
@@ -117,10 +117,10 @@ jobs:
 
       - name: Build and push Docker image
         id: push
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: ./Dockerfile
-          push: ${{ github.event_name != 'pull_request' }}
+          push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{steps.meta.outputs.labels }}
