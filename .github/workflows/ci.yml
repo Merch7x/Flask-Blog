@@ -111,7 +111,7 @@ jobs:
           images: |
             merch7x/flask-blog
             ghcr.io/${{ github.repository_owner }}/dev
-            ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/merch7x/flask-blog
+            ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/flask-blog
           # tags: |
           #   type=semver,pattern={{version}}
 
