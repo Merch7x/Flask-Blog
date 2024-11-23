@@ -18,3 +18,5 @@ Babel==2.16.0
 flask_babel==4.0.0
 python-dotenv==1.0.1
 email_validator==2.2.0
+elastic-transport==8.15.1
+elasticsearch==8.16.0
