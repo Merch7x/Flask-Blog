@@ -38,15 +38,19 @@ class SearchableMixin:
     def after_commit(cls, session):
         """Synchronizes changes made
         in the database with Elasticsearch after a commit."""
-        for obj in session._changes['add']:
-            if isinstance(obj, SearchableMixin):
-                add_to_index(obj.__tablename__, obj)
-        for obj in session._changes['update']:
-            if isinstance(obj, SearchableMixin):
-                add_to_index(obj.__tablename__, obj)
-        for obj in session._changes['delete']:
-            if isinstance(obj, SearchableMixin):
-                remove_from_index(obj.__tablename__, obj)
+        try:
+            for obj in session._changes['add']:
+                if isinstance(obj, SearchableMixin):
+                    add_to_index(obj.__tablename__, obj)
+            for obj in session._changes['update']:
+                if isinstance(obj, SearchableMixin):
+                    add_to_index(obj.__tablename__, obj)
+            for obj in session._changes['delete']:
+                if isinstance(obj, SearchableMixin):
+                    remove_from_index(obj.__tablename__, obj)
+        except Exception as e:
+            # Log the exception to avoid impacting the database functionality
+            current_app.logger.error(f"Elasticsearch update failed: {e}")
 
         session._changes = None
 
@@ -55,7 +59,10 @@ class SearchableMixin:
         """Rebuilds the Elasticsearch index
         for all records of the model."""
         for obj in cls.query:
-            add_to_index(cls.__tablename__, obj)
+            try:
+                add_to_index(cls.__tablename__, obj)
+            except Exception as e:
+                current_app.logger.error(f"Failed to reindex {obj.id}: {e}")
 
 
 # Auxiliary table used to instrument the many to many relationship
@@ -169,3 +176,19 @@ class Post(SearchableMixin, db.Model):
 
 db.event.listen(db.session, 'before_commit', SearchableMixin.before_commit)
 db.event.listen(db.session, 'after_commit', SearchableMixin.after_commit)
+
+
+# def retry_es_operations():
+#     """Retry failed Elasticsearch operations."""
+#     global es_retry_queue
+#     for action, instance in es_retry_queue[:]:  # Copy the list to iterate safely
+#         try:
+#             if action == 'add':
+#                 add_to_index(instance.__tablename__, instance)
+#             elif action == 'update':
+#                 add_to_index(instance.__tablename__, instance)
+#             elif action == 'delete':
+#                 remove_from_index(instance.__tablename__, instance)
+#             es_retry_queue.remove((action, instance))  # Remove successfully retried operation
+#         except Exception as e:
+#             current_app.logger.error(f"Retry failed for Elasticsearch operation: {e}")
