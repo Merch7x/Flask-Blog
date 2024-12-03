@@ -19,3 +19,5 @@ class Config:
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
     ADMINS = ['aquamaingi@outlook.com']
     LANGUAGES = ['en', 'es']
+    ELASTICSEARCH_URL = os.environ.get('ELASTICSEARCH_URL')
+    ELASTICSEARCH_API_KEY = os.environ.get('ELASTICSEARCH_API_KEY')
