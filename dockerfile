@@ -1,16 +1,17 @@
-FROM python:slim
+FROM python:3.12-slim
 
 COPY requirements.txt requirements.txt
-RUN pip install -r requirements.txt gunicorn pymysql cryptography
+RUN pip install -r requirements.txt 
+RUN pip install gunicorn pymysql cryptography
 
 
-COPY App App
-COPY migrations migrations
-COPY blog.py config.py boot.sh ./
-RUN chmod 755 boot.sh
+COPY App/ App/
+COPY migrations/ migrations/
+COPY blog.py config.py boot2.sh ./
+RUN chmod 755 boot2.sh
 
-ENV FLASK_APP blog.py
-RUN flask translate compile
+ENV FLASK_APP=blog.py
+# RUN flask translate compile
 
 EXPOSE 5000
-ENTRYPOINT [ "./boot.sh" ]
+ENTRYPOINT [ "./boot2.sh" ]
