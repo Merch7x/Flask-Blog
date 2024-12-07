@@ -1,0 +1,27 @@
+name: "Setup Python Environment"
+description: "Sets up Python environment and installs dependencies"
+inputs:
+  python-version:
+    description: "The Python version to use"
+    required: true
+
+  requirements-file:
+    description: "The requirements file to install"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ inputs.python-version }}
+        cache: "pip"
+
+    - name: Install dependencies
+      shell: bash
+      run: |
+        python -m venv venv
+        source venv/bin/activate
+        pip install --upgrade pip
+        pip install -r ${{ inputs.requirements-file }}
