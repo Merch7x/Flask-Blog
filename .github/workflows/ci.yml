@@ -5,10 +5,10 @@ on:
   push:
     branches: [main]
     paths-ignore:
-      - "migrations/"
+      - "migrations/**"
       - "*.txt"
       - "*.md"
-      - "infra/"
+      - "infra/**"
       - ".github/**"
 
   pull_request:
