@@ -71,7 +71,7 @@ def explore():
 
 
 @bp.route('/user/<username>')
-@ login_required
+@login_required
 def user(username):
     """Profile page route"""
     user = User.query.filter_by(username=username).first_or_404()
