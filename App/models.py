@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from hashlib import md5
 from flask import current_app
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -167,11 +167,36 @@ class Post(SearchableMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     body = db.Column(db.String(140))
     timestamp = db.Column(db.DateTime, index=True,
-                          default=datetime.now)  # refer back utcnow deprecated
+                          default=datetime.now(timezone.utc))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
     def __repr__(self):
         return f'<post {self.body}'
+
+
+# class Message(db.Model):
+#     """Model for user messages"""
+#     id = db.Column(db.Integer, primary_key=True)
+#     sender_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+#     recipient_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+#     body = db.Column(db.String(140))
+#     timestamp = db.Column(db.DateTime, index=True,
+#                           default=datetime.now(timezone.utc))
+
+#     def __repr__(self):
+#         return '<message {}>'.format(self.body)
+
+
+# class Notifications(db.Model):
+#     """Model for notis"""
+#     id = db.Column(db.integer, primary_key=True)
+#     name = db.Column(db.String(128), index=True)
+#     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+#     imestamp = db.Column(db.DateTime, index=True, default=time)
+#     payload_json = db.Column(db.Text)
+
+#     def get_data(self):
+#         return json.loads(str(self.payload_json))
 
 
 db.event.listen(db.session, 'before_commit', SearchableMixin.before_commit)
