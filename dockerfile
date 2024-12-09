@@ -8,7 +8,7 @@ RUN pip install gunicorn pymysql cryptography
 COPY App/ App/
 COPY migrations/ migrations/
 COPY blog.py config.py boot.sh ./
-RUN chmod 755 boot2.sh
+RUN chmod 755 boot.sh
 
 ENV FLASK_APP=blog.py
 # RUN flask translate compile
