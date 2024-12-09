@@ -1,0 +1,208 @@
+name: Create Dev Stagging Environment
+
+on:
+  workflow_dispatch:
+    inputs:
+      PR_number:
+        description: "Pull request number"
+        required: true
+
+jobs:
+  Pre-Deployment:
+    name: "Verify pre-requisites before deployment"
+    defaults:
+      run:
+        shell: bash
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify Pull Request Number
+        uses: actions/github-script@v7
+        id: verify_pr_number
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          result-encoding: string
+          script: |
+            const response = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: ${{ github.event.inputs.PR_number }}
+            });
+
+            if (response.data.state !== 'open') {
+              throw new Error('Pull request is not open or number is not valid!');
+            }
+
+            console.log("PR ref: " + response.data.head.ref);
+            return response.data.head.ref;
+
+    outputs:
+      pr_number: ${{ steps.verify_pr_number.outputs.result }}
+
+  Build_Publish:
+    name: Push Docker image to Docker Hub, GHCR and ECR
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+      attestations: write
+      id-token: write
+    needs: Pre-Deployment
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.Pre-Deployment.outputs.pr_number}}
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.AWS_OICD_ROLE }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Extract metadata (tags, labels) for Docker (Docker Hub, GHCR and ECR)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            merch7x/flask-blog
+            ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/flask-blog
+          tags: |
+            pr-${{ github.event.inputs.PR_number }}
+
+      - name: Build and push Docker image
+        id: push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  # Create_Infrastructure:
+  #   defaults:
+  #     run:
+  #       working-directory: infra/env/stagging/
+  #   permissions:
+  #     pull-requests: write
+  #   runs-on: ubuntu-latest
+  #   needs: Build_Publish
+  #   env:
+  #     TF_VAR_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  #     TF_VAR_secret_key: ${{ secrets.AWS_SECRET_KEY }}
+  #     TF_VAR_image: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/flask-blog:pr-${{ github.event.inputs.PR_number }}
+  #   steps:
+  #     - name: Checkout infra branch
+  #       uses: actions/checkout@v4
+  #       with:
+  #         ref: infra
+
+  #     - name: Setup Terraform
+  #       uses: hashicorp/setup-terraform@v3
+  #       with:
+  #         terraform_version: 1.9.2
+  #         cli_config_credentials_token: ${{ secrets.TERRAFORM_API_TOKEN }}
+
+  #     - name: Terraform fmt
+  #       id: fmt
+  #       run: terraform fmt -check
+  #       continue-on-error: true
+
+  #     - name: Terraform Init
+  #       id: init
+  #       run: terraform init
+
+  #     - name: Terraform Validate
+  #       id: validate
+  #       run: terraform validate -no-color
+
+  #     - name: Terraform Plan
+  #       id: plan
+  #       run: terraform plan -no-color
+  #       continue-on-error: true
+
+  #     - name: Update PR with terraform plan
+  #       uses: actions/github-script@v7
+  #       env:
+  #         PLAN: "terraform\n${{ steps.plan.outputs.stdout }}"
+  #       with:
+  #         github-token: ${{ secrets.GITHUB_TOKEN }}
+  #         script: |
+  #           const prNumber = parseInt("${{ github.event.inputs.PR_number }}", 10);
+  #           if (!prNumber) {
+  #             throw new Error("Pull request number is missing.");
+  #             }
+  #           const output = `#### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
+  #           #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
+  #           #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
+  #           <details><summary>Validation Output</summary>
+
+  #           \`\`\`\n
+  #           ${{ steps.validate.outputs.stdout }}
+  #           \`\`\`
+
+  #           </details>
+
+  #           #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
+
+  #           <details><summary>Show Plan</summary>
+
+  #           \`\`\`\n
+  #           ${process.env.PLAN}
+  #           \`\`\`
+
+  #           </details>
+
+  #           *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
+
+  #           await github.rest.issues.createComment({
+  #             issue_number: prNumber,
+  #             owner: context.repo.owner,
+  #             repo: context.repo.repo,
+  #             body: output
+  #           })
+
+  #     - name: Terraform Plan Status
+  #       if: steps.plan.outcome == 'failure'
+  #       run: exit 1
+
+  #     - name: Terraform Apply
+  #       id: apply
+  #       run: terraform apply -auto-approve
+
+  #     - name: Terraform Output
+  #       id: apply-output
+  #       working-directory: infra/env/stagging
+  #       run: echo "::set-output name=fargate_public_ip::$(terraform output -raw -no-color output fargate_public_ip)"
+
+  #     - name: Update Pr with terraform output
+  #       uses: actions/github-script@v7
+  #       with:
+  #         github-token: ${{ secrets.GITHUB_TOKEN }}
+  #         script: |
+  #           const output = `#### Container Public_Ip 🖌\`${{ steps.fmt.outcome }}\`
+  #           <details><summary>Terraform Output</summary>
+
+  #           \`\`\`\n
+  #           ${{ steps.apply-output.outputs.fargate_public_ip }}
+  #           \`\`\`
+
+  #           *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
+
+  #           await github.rest.issues.createComment({
+  #             issue_number: prNumber,
+  #             owner: context.repo.owner,
+  #             repo: context.repo.repo,
+  #             body: output
+  #           })

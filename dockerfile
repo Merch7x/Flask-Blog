@@ -14,4 +14,4 @@ ENV FLASK_APP=blog.py
 # RUN flask translate compile
 
 EXPOSE 5000
-ENTRYPOINT [ "./boot2.sh" ]
+ENTRYPOINT [ "./boot.sh" ]
