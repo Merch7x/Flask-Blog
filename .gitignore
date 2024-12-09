@@ -2,5 +2,5 @@ venv/
 __pycache__
 app.db
 logs/
-dockercompose
+docker-compose.yml
 .env
